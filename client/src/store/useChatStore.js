@@ -7,6 +7,7 @@ export const useChatStore = create((set, get) => ({
     messages: [],
     users: [],
     selectedUser: null,
+    onlineUsers: [],
     isUserLoading: false,
     isMessagesLoading: false,
 
@@ -56,6 +57,10 @@ export const useChatStore = create((set, get) => ({
       const socket = useAuthStore.getState().socket;
       if (!socket) return;
 
+      // Remove previous listeners to avoid duplicates
+      socket.off("newMessage");
+      socket.off("getOnlineUsers");
+
       socket.on("newMessage", (newMessage) => {
         // Accept messages where either sender or receiver is the selected user
         const isRelevant =
@@ -81,7 +86,15 @@ export const useChatStore = create((set, get) => ({
       socket.off("getOnlineUsers");
     },
 
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (selectedUser) => {
+      // Unsubscribe from previous user
+      get().unsubscribeFromMessages();
+      set({ selectedUser, messages: [] });
+      if (selectedUser) {
+        get().getMessages(selectedUser._id);
+        get().subscribeToMessages();
+      }
+    },
  }));
 
    

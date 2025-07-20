@@ -11,8 +11,8 @@ export const useAuthStore = create((set,get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
-  onlineUsers: [0],
-  socket:null,
+  onlineUsers: [],
+  socket: null,
 
   CheckAuth: async () => {
     try {
@@ -29,6 +29,7 @@ export const useAuthStore = create((set,get) => ({
         authUser: null,
         isCheckingAuth: false,
       });
+      get().disconnectSocket();
     }
   },
 
@@ -40,7 +41,8 @@ export const useAuthStore = create((set,get) => ({
       set({ authUser: res.data.user || res.data });
     } catch (error) {
       console.error("Error signing up:", error);
-      toast.error("Signup failed. Please try again.");
+      toast.error(error?.response?.data?.message || "Signup failed. Please try again.");
+      set({ authUser: null });
     } finally {
       set({ isSigningUp: false });
       toast.dismiss();
@@ -53,11 +55,11 @@ export const useAuthStore = create((set,get) => ({
       const res = await instance.post('/auth/login', data);
       toast.success("Login successful!");
       set({ authUser: res.data.user || res.data });
-
       get().connectSocket();
     } catch (error) {
       console.error("Error logging in:", error);
-      toast.error("Login failed. Please try again.");
+      toast.error(error?.response?.data?.message || "Login failed. Please try again.");
+      set({ authUser: null });
     } finally {
       set({ isLoggingIn: false });
       toast.dismiss();
@@ -69,7 +71,7 @@ export const useAuthStore = create((set,get) => ({
       await instance.post('/auth/logout');
       toast.success("Logout successful!");
       set({ authUser: null });
-      
+      get().disconnectSocket();
     } catch (error) {
       console.error("Error logging out:", error);
       toast.error("Logout failed. Please try again.");
@@ -93,25 +95,45 @@ export const useAuthStore = create((set,get) => ({
     }
   },
 
-  connectSocket:()=>{
-    const {authUser} =get();
-    if(!authUser || get().socket?.connected) return ;
+  connectSocket: () => {
+    const { authUser, socket } = get();
+    if (!authUser || socket?.connected) return;
 
-    const socket = io(BASE_URl,{
-      query:{
-        userId:authUser._id,
+    const newSocket = io(BASE_URl, {
+      query: {
+        userId: authUser._id,
       },
+      autoConnect: false,
+      transports: ["websocket"],
     });
-    socket.connect();
 
-    set({socket:socket});
-    socket.on("getOnlineUsers",(userIds)=>{
-      set({onlineUsers:userIds});
+    newSocket.connect();
+
+    // Clean up previous listeners if any
+    newSocket.removeAllListeners();
+
+    set({ socket: newSocket });
+
+    newSocket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+
+    newSocket.on("disconnect", () => {
+      set({ onlineUsers: [] });
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+      toast.error("Socket connection failed.");
     });
   },
 
-  disconnectSocket:()=>{
-    if(get().socket?.connected)
-      get().socket.disconnect();
-    },
+  disconnectSocket: () => {
+    const { socket } = get();
+    if (socket?.connected) {
+      socket.removeAllListeners();
+      socket.disconnect();
+      set({ socket: null, onlineUsers: [] });
+    }
+  },
 }))
