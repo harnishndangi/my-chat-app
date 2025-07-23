@@ -95,6 +95,21 @@ export const useChatStore = create((set, get) => ({
         get().subscribeToMessages();
       }
     },
+
+    // Delete message by ID
+    deleteMessage: async (messageId) => {
+      const { messages } = get();
+      try {
+        await instance.delete(`/messages/${messageId}`);
+        set({ messages: messages.map(msg =>
+          msg._id === messageId ? { ...msg, deleted: true } : msg
+        ) });
+        toast.success("Message deleted");
+      } catch (error) {
+        console.error("Error deleting message:", error);
+        toast.error("Failed to delete message");
+      }
+    },
  }));
 
    
