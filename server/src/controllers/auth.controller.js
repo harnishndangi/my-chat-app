@@ -5,16 +5,22 @@ import cloudinary from "../lib/cloudinary.js";
  
 export const signUp = async (req, res) => {
     const { fullName, email, password } = req.body;
+    console.log("Signup Request Body:", req.body); // Debug log
     try {
         if (!fullName || !email || !password) {
+            console.log("Details missing:", { fullName, email, password }); // Debug log
             return res.status(400).json({ message: "User should add all the details" });
         }
         if (password.length < 6) {
+            console.log("Password too short"); // Debug log
             return res.status(400).json({ message: "Password must be at least 6 characters" });
         }
 
         const user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: "Email already exists" });
+        if (user) {
+            console.log("Email already exists:", email); // Debug log
+            return res.status(400).json({ message: "Email already exists" });
+        }
 
         const hashpass = await bcrypt.hash(password, 10);
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuthStore } from "../store/useAuthstore"; 
+import { useAuthStore } from "../store/useAuthstore";
 import { Camera, Mail, User } from "lucide-react";
 
 const ProfilePage = () => {
@@ -38,6 +38,10 @@ const ProfilePage = () => {
                 src={selectedImg || authUser.profilePic || "/avatar.png"}
                 alt="Profile"
                 className="size-36 rounded-full object-cover border-4 border-base-200 shadow-lg ring-4 ring-base-100 transition-all duration-300 group-hover:ring-primary"
+                onError={(e) => {
+                  e.target.src = "/avatar.png";
+                  e.target.onerror = null; // Prevent infinite loop if fallback fails
+                }}
               />
               <label
                 htmlFor="avatar-upload"

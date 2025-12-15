@@ -13,7 +13,14 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt={selectedUser.fullName}
+                onError={(e) => {
+                  e.target.src = "/avatar.png";
+                  e.target.onerror = null;
+                }}
+              />
             </div>
           </div>
 

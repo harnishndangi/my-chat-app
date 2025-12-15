@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Users, Wifi, Moon, Sun, BellRing, Settings, LogOut, MessageSquare } from 'lucide-react'; // Added more icons
 import { useChatStore } from '../store/useChatStore';
 import { useAuthStore } from '../store/useAuthstore';
-import SidebarSkeleton from './skeletons/SidebarSkeleton'; 
-import {Link} from 'react-router-dom'; // Import Link for navigation 
+import SidebarSkeleton from './skeletons/SidebarSkeleton';
+import { Link } from 'react-router-dom'; // Import Link for navigation 
 
 function Sidebar() {
   const { getUsers, users, selectedUser, setSelectedUser, isUserLoading } = useChatStore();
@@ -196,6 +196,10 @@ function Sidebar() {
                   src={user.profilePic || "/avatar.png"}
                   alt={user.fullName}
                   className="size-12 object-cover rounded-full shadow-md transform group-hover:scale-105 transition-transform duration-200"
+                  onError={(e) => {
+                    e.target.src = "/avatar.png";
+                    e.target.onerror = null;
+                  }}
                 />
                 {onlineUsers.includes(user._id) && (
                   <span
@@ -241,6 +245,10 @@ function Sidebar() {
                 src={authUser.profilePic || "/avatar.png"}
                 alt={authUser.fullName}
                 className="size-10 object-cover rounded-full border-2 border-indigo-500"
+                onError={(e) => {
+                  e.target.src = "/avatar.png";
+                  e.target.onerror = null;
+                }}
               />
               {onlineUsers.includes(authUser._id) && (
                 <span
@@ -251,10 +259,10 @@ function Sidebar() {
             </div>
             {!isSidebarCollapsed && (
               <Link to={"/profile"} className="flex-1 text-left min-w-0">
-              <div className="flex-1 text-left min-w-0">
-                <div className="font-medium truncate text-base">{authUser.fullName}</div>
-                <div className={`text-xs ${textColorClasses}`}>My Profile</div>
-              </div>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="font-medium truncate text-base">{authUser.fullName}</div>
+                  <div className={`text-xs ${textColorClasses}`}>My Profile</div>
+                </div>
               </Link>
             )}
           </button>
@@ -266,14 +274,14 @@ function Sidebar() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} // Replace with actual toggleTheme
           >
             {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
-          </button> 
-          <Link to={"/settings"}>   
-          <button
-            className={`btn btn-ghost btn-circle tooltip ${isSidebarCollapsed ? 'tooltip-right' : ''} ${theme === 'dark' ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-200'}`}
-          >
-            <Settings className="size-5" />
           </button>
-          </Link> 
+          <Link to={"/settings"}>
+            <button
+              className={`btn btn-ghost btn-circle tooltip ${isSidebarCollapsed ? 'tooltip-right' : ''} ${theme === 'dark' ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-200'}`}
+            >
+              <Settings className="size-5" />
+            </button>
+          </Link>
           <button
             className={`btn btn-ghost btn-circle tooltip ${isSidebarCollapsed ? 'tooltip-right' : ''} ${theme === 'dark' ? 'text-red-400 hover:bg-gray-700' : 'text-red-500 hover:bg-gray-200'}`}
             data-tip="Logout"

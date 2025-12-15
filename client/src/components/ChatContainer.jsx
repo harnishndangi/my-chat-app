@@ -24,9 +24,9 @@ const ChatContainer = () => {
 
     subscribeToMessages();
 
-    return ()=> unsubscribeFromMessages();
+    return () => unsubscribeFromMessages();
 
-  }, [selectedUser._id, getMessages,subscribeToMessages,unsubscribeFromMessages]);
+  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -64,6 +64,10 @@ const ChatContainer = () => {
                       : selectedUser.profilePic || "/avatar.png"
                   }
                   alt="profile pic"
+                  onError={(e) => {
+                    e.target.src = "/avatar.png";
+                    e.target.onerror = null;
+                  }}
                 />
               </div>
             </div>
